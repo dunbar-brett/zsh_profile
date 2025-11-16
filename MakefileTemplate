@@ -1,0 +1,65 @@
+ISORT := poetry run isort
+BLACK := poetry run black
+MYPY := poetry run mypy --show-error-codes --pretty --explicit-package-bases --check-untyped-defs
+LINT := poetry run pylint --rcfile=pyproject.toml
+FOLDERS = config/ database/ hipaa/ services/ tests/ web/ worker/ cli/
+
+install: ## Install app dependencies
+	poetry install
+
+
+format: ## Format code in 'database' directory using 'black' and 'isort'
+	$(ISORT) $(FOLDERS)
+	$(BLACK) $(FOLDERS)
+
+format-check: ## Check if any code needs to be formatted by black. Won't format automatically
+	$(ISORT) --check $(FOLDERS)
+	$(BLACK) --check $(FOLDERS)
+
+lint: ## Performs code linting using pylint
+	$(LINT) $(FOLDERS)
+
+mypy:
+	$(MYPY) $(FOLDERS)
+
+test: ## Run the test suite. Specify a particular module to run with M=<module>
+	poetry run pytest -vv ./tests/$(M)
+
+dbtest: ## Same as 'test' but with a test database
+	set -a && source .env.tests && set +a && poetry run pytest -vv ./tests/$(M)
+
+coverage: py_clean ## Add the coverage for the project
+	poetry run pytest \
+	--junitxml=coverage/test-results.xml \
+	--cov-report html:coverage/htmlcov \
+	--cov-report xml:coverage/coverage.xml \
+	--cov-report term-missing \
+	--cov=web/ \
+	--cov=worker/ \
+	--cov=database/ \
+	--cov=services/ \
+	--cov=hipaa/ \
+	tests/
+
+show_coverage: coverage ## Check the coverage for the project
+	open coverage/htmlcov/index.html
+
+py_clean: ## Remove unused python files
+	@find . | grep -E "(__pycache__|\.pyc|\.pyo$$)" | xargs rm -rf
+	@find . -type d -empty -delete
+	@rm -rdf coverage/
+
+check: format-check lint mypy ## Run the linters and static analysis tools
+
+run:  ## Run API with uvicorn
+	poetry run python -m uvicorn web.main:app --reload --no-access-log
+
+migrate:  # Apply all database migrations
+	poetry run alembic upgrade head
+
+migrate-down:  # Revert all database migrations
+	poetry run alembic downgrade base
+
+db-reset: # Reset local database completely
+	poetry run alembic downgrade base
+	poetry run alembic upgrade head
