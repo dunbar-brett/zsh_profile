@@ -1,0 +1,27 @@
+{
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit",
+            "source.unusedImports": "explicit",
+        },
+    },
+    "isort.args":["--settings-path", "${workspaceFolder}/pyproject.toml"],
+    "pylint.cwd": "${workspaceFolder}",
+    "pylint.args": ["--rcfile=pyproject.toml"],
+    "python.testing.pytestArgs": [
+        "tests",
+        "-vv"
+    ],
+    "python.testing.cwd": "${workspaceFolder}",
+    "python.envFile": "${workspaceFolder}/.env",
+    // "python.envFile": "${workspaceFolder}/.env.tests",
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.analysis.extraPaths": ["${workspaceFolder}"],
+    "python.analysis.autoImportCompletions": true,
+    "workbench.colorTheme": "Gruvbox Dark Medium",
+    "makefile.configureOnOpen": false,
+    "files.autoSave": "afterDelay"
+}
